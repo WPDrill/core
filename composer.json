@@ -1,0 +1,30 @@
+{
+    "name": "jouleslabs/core-wp",
+    "description": "A fresh framework for build WP plugin",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["wordpress", "plugin", "framework"],
+    "version": "1.0.0",
+    "autoload": {
+        "psr-4": {
+            "CoreWP\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Nahid Bin Azhar",
+            "email": "nahid.dns@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.4",
+        "psr/container": "^2.0",
+        "php-di/php-di": "^7.0",
+        "twig/twig": "^3.0",
+        "hassankhan/config": "^3.1",
+        "usmanhalalit/viocon": "1.0.*@dev",
+        "nyholm/psr7": "^1.8",
+        "nyholm/psr7-server": "^1.1"
+    }
+}
