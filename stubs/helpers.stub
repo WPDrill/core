@@ -1,0 +1,54 @@
+<?php
+
+use WPDrill\Response;
+use WPDrill\Plugin;
+
+if (!function_exists('#[function-prefix]_plugin')) {
+    function #[function-prefix]_plugin(): \WPDrill\Plugin
+    {
+        return \WPDrill\Plugin::getInstance();
+    }
+}
+
+if (!function_exists('#[function-prefix]_rest')) {
+    function #[function-prefix]_rest($data): \WPDrill\Response
+    {
+        return new Response($data);
+    }
+}
+
+if (!function_exists('#[function-prefix]_plugin_path')) {
+    function #[function-prefix]_plugin_path(string $path = ''): string
+    {
+        return #[const-prefix]_DIR_PATH . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('#[function-prefix]_plugin_file')) {
+    function #[function-prefix]_plugin_file(string $path = ''): string
+    {
+        return #[const-prefix]_FILE;
+    }
+}
+
+if (!function_exists('#[function-prefix]_resource_path')) {
+    function #[function-prefix]_resource_path(string $path = ''): string
+    {
+        return #[function-prefix]_plugin_path('resources/' . ltrim($path, '/'));
+    }
+}
+
+if (!function_exists('#[function-prefix]_storage_path')) {
+    function #[function-prefix]_storage_path(string $path = ''): string
+    {
+        return #[function-prefix]_plugin_path('storage/' . ltrim($path, '/'));
+    }
+}
+
+if (!function_exists('#[function-prefix]_plugin')) {
+    function #[function-prefix]_plugin(string $path = ''): Plugin
+    {
+        return Plugin::getInstance(#[const-prefix]_FILE);
+    }
+}
+
