@@ -116,12 +116,32 @@ class RouteManager
                 register_rest_route($this->slug, $this->makeUri($route), [
                     'methods' => $route->getMethod(),
                     'callback' => $instance,
-                    'permission_callback' => $route->getMiddleware() ?? function () {
-                            return true;
-                        },
+                    'permission_callback' => $this->resolveMiddleware($route->getMiddleware()),
                 ]);
             }
         });
+    }
+
+    protected function resolveMiddleware($middleware)
+    {
+        if (is_null($middleware)) {
+            return function () {
+                return true;
+            };
+        }
+
+        if (is_string($middleware)) {
+            $middleware = $this->app->resolve($middleware);
+
+            return [$middleware, 'handle'];
+        }
+
+        if (is_callable($middleware)) {
+            return $middleware;
+        }
+
+        throw new \Exception('Middleware can\'t be resolved');
+
     }
 
 
