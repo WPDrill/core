@@ -1,6 +1,6 @@
 {
     "name": "wpdrill/core",
-    "description": "A WordPress plugin development framework for human",
+    "description": "A toolset for WPDrill",
     "type": "library",
     "license": "MIT",
     "keywords": ["wordpress", "plugin", "framework"],
