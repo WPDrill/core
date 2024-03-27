@@ -102,7 +102,7 @@ class Plugin
 
         $this->registerPluginHooks(
             $initHandlers['activated'] ?? null,
-         $initHandlers['deactivated'] ?? null,
+            $initHandlers['deactivated'] ?? null,
             $initHandlers['uninstalled'] ?? null
         );
 
@@ -120,7 +120,7 @@ class Plugin
         return $this->container;
     }
 
-    public function resolve(string $name): mixed
+    public function resolve(string $name)
     {
         return $this->container->get($name);
     }
