@@ -51,7 +51,7 @@ class Menu
         return $this;
     }
 
-    public function parent(string $slug): self {
+    public function parentSlug(string $slug): self {
         $this->parentSlug = $slug;
 
         return $this;

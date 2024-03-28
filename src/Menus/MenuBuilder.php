@@ -37,7 +37,8 @@ class MenuBuilder
         $this->menus[] = $this->menu;
 
         if ($this->group) {
-            $this->menu->parent($this->group->getSlug());
+            $this->menu->parentSlug($this->group->getSlug());
+            $this->menu->slug($this->group->getSlug() . '_' . $this->menu->getSlug());
         }
 
         return $this->menu;
