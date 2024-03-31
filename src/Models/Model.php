@@ -1,8 +1,9 @@
 <?php
 
-namespace WPDrill;
+namespace WPDrill\Models;
 
 use WPDrill\DB\QueryBuilder\QueryBuilderHandler;
+use WPDrill\Facade;
 
 abstract class Model extends Facade
 {
@@ -19,7 +20,7 @@ abstract class Model extends Facade
 
     public static function getTableName(): string
     {
-        return '';
+        return static::$table;
     }
 
     public static function getFacadeAccessor()
@@ -27,6 +28,11 @@ abstract class Model extends Facade
         return QueryBuilderHandler::class;
     }
 
+    /**
+* @param $method
+* @param $args
+* @return mixed
+     */
     public static function __callStatic($method, $args)
     {
         $instance = static::resolveFacadeInstance(static::getFacadeAccessor());
@@ -36,7 +42,7 @@ abstract class Model extends Facade
             throw new \RuntimeException('A facade root has not been set.');
         }
 
-        $instance = $instance->table(static::getTableName());
+        $instance = $instance->table(self::getTableName());
 
         return call_user_func_array([$instance, $method], $args);
     }
