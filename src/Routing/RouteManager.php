@@ -105,7 +105,7 @@ class RouteManager
                     }
                 }
 
-                if (is_callable($route->getAction())) {
+                if (!is_array($route->getAction()) && is_callable($route->getAction())) {
                     $instance = $route->getAction();
                 }
 
