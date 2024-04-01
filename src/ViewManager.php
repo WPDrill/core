@@ -24,7 +24,7 @@ class ViewManager
     {
         $loader = new FilesystemLoader($this->plugin->getPath('resources/views'));
         $this->twig = new Environment($loader, [
-            'cache' => $this->plugin->getPath('storage/cache')
+            'cache' => $this->plugin->getPath('storage/cache/views')
         ]);
 
         $lexer = new Lexer($this->twig, [
