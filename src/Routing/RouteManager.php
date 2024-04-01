@@ -105,7 +105,7 @@ class RouteManager
                     }
                 }
 
-                if (!is_array($route->getAction()) && is_callable($route->getAction())) {
+                if (is_callable($route->getAction())) {
                     $instance = $route->getAction();
                 }
 
@@ -113,7 +113,7 @@ class RouteManager
                     $instance = $route->getAction();
                 }
 
-                register_rest_route($this->slug, $this->makeUri($route), [
+                register_rest_route($this->slug, $route->getUri(), [
                     'methods' => $route->getMethod(),
                     'callback' => $instance,
                     'permission_callback' => $this->resolveMiddleware($route->getMiddleware()),
@@ -124,7 +124,7 @@ class RouteManager
 
     protected function resolveMiddleware($middleware)
     {
-        if (is_null($middleware)) {
+        if (empty($middleware)) {
             return function () {
                 return true;
             };
@@ -142,15 +142,5 @@ class RouteManager
 
         throw new \Exception('Middleware can\'t be resolved');
 
-    }
-
-
-    public function makeUri(Route $route): string
-    {
-        $prefix = $route->getPrefix();
-        if ($prefix !== '') {
-            return rtrim($prefix, '/') . '/' . ltrim($route->getUri(), '/');
-        }
-        return '/' . ltrim($route->getUri(), '/');
     }
 }
