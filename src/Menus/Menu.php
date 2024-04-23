@@ -17,7 +17,7 @@ class Menu
         $this->pageTitle = $pageTitle;
         $this->name = $pageTitle;
         $this->capability = $capability;
-        $this->slug = $this->toSnakeCase($pageTitle);
+        $this->slug = $this->toUrlParam($pageTitle);
         $this->handler = $handler;
     }
 
@@ -96,5 +96,10 @@ class Menu
     protected function toSnakeCase($string): string
     {
         return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $string));
+    }
+
+    protected function toUrlParam(string $string): string
+    {
+        return strtolower(str_replace([' ', '-'], '_', $string));
     }
 }
