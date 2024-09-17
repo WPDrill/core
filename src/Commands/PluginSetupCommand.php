@@ -26,8 +26,8 @@ class PluginSetupCommand extends BaseCommand
         $functionPrefix = lcfirst($prefix);
         $constPrefix = strtoupper($prefix);
         $restNamespace = $this->ask('Enter the rest namespace: ');
-        $appRootNamespace = $this->ask('Enter the app root namespace: ');
-        $appRootNamespace = rtrim(str_replace(' ', '', $appRootNamespace), '\\');
+        $rootNamespace = $this->ask('Enter the app root namespace: ');
+        $appRootNamespace = rtrim(str_replace(' ', '', $rootNamespace), '\\');
 
         $replaces = [
             '#[plugin-name]' => $pluginName,
@@ -36,6 +36,7 @@ class PluginSetupCommand extends BaseCommand
             '#[const-prefix]' => $constPrefix,
             '#[function-prefix]' => $functionPrefix,
             '#[rest-namespace]' => $restNamespace,
+            '#[root-namespace]' => $rootNamespace,
             'namespace App' => 'namespace ' . $appRootNamespace,
             'use App' => 'use ' . $appRootNamespace,
             '\App\\' => '\\' . $appRootNamespace . '\\',
@@ -51,6 +52,7 @@ class PluginSetupCommand extends BaseCommand
 
         $this->replaceExecute($replaces);
         $this->process(['composer', 'dump-autoload']);
+        $this->process(['composer', 'bin', 'php-scoper', 'require', '--dev', 'humbug/php-scoper']);
 
         $output->writeln('<info>Plugin name is: </info>'.$pluginName);
         return Command::SUCCESS;

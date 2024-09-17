@@ -11,9 +11,9 @@ class ShortcodeServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->plugin->bind('shortcode', function () {
-            $this->shortcode = new ShortcodeManager($this->plugin);
+        $this->shortcode = new ShortcodeManager($this->plugin);
 
+        $this->plugin->bind('shortcode', function () {
             return $this->shortcode;
         });
     }
