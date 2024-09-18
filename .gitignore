@@ -3,3 +3,4 @@ vendor
 *.DS_Store
 .env.example
 composer.lock
+/.idea

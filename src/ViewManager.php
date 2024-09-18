@@ -23,9 +23,13 @@ class ViewManager
     protected function init()
     {
         $loader = new FilesystemLoader($this->plugin->getPath('resources/views'));
-        $this->twig = new Environment($loader, [
-            'cache' => $this->plugin->getPath('storage/cache/views')
-        ]);
+
+        $options = [];
+        if ( !$this->plugin->isDevelopment() ) {
+            $options['cache'] = $this->plugin->getPath('storage/cache/views');
+        }
+
+        $this->twig = new Environment($loader, $options);
 
         $lexer = new Lexer($this->twig, [
             'tag_comment'   => Config::get('view.lexer.tag_comment', ['{#', '#}']),

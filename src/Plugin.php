@@ -24,6 +24,10 @@ class Plugin
      */
     protected string $version;
     /**
+     * @var bool
+     */
+    protected bool $isDev;
+    /**
      * @var mixed|string
      */
     protected string $name;
@@ -53,6 +57,7 @@ class Plugin
         $this->version = $configs['version'] ?? '1.0.0';
         $this->name = $configs['name'] ?? 'WPDrill';
         $this->slug = $configs['slug'] ?? 'corewp';
+        $this->isDev = $configs['is_dev'] ?? false;
         $this->restApiNamespace = $configs['rest_api_namespace'] ?? 'corewp';
         $this->providers = $configs['providers'] ?? [];
         static::$instance = $this;
@@ -149,6 +154,10 @@ class Plugin
 
         return $handler;
 
+    }
+
+    public function isDevelopment(): bool {
+        return $this->isDev;
     }
 
     public function getPath(string $path = ''): string
