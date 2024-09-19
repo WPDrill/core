@@ -10,6 +10,7 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Process\Process;
 use WPDrill\DB\Migration\Migrator;
 use WPDrill\Facades\Config;
 
@@ -35,7 +36,7 @@ class PluginBuildCommand extends BaseCommand
             $buildName .= '-prod';
         }
 
-        $outputDir = WPDRILL_ROOT_PATH . '/.dist/' . $buildName;
+        $outputDir = WPDRILL_ROOT_PATH . '/' . Config::get('plugin.build.output_dir', '.dist') . '/' . $buildName;
 
 
         $io->newLine();
@@ -45,14 +46,17 @@ class PluginBuildCommand extends BaseCommand
             $this->process(['composer', 'install', '--no-dev']);
         }
 
-        $buildProcess = $this->process(['vendor/bin/php-scoper', 'add-prefix', '--force', '--output-dir=' . $outputDir]);
+        $buildProcess = $this->process(['./vendor/bin/php-scoper', 'add-prefix', '--force', '--output-dir=' . $outputDir]);
 
         if ($buildProcess->isSuccessful()) {
+            $io->newLine();
+            $this->executeCommands($outputDir);
             if ($input->getOption('prod')) {
                 $this->process(['composer', 'install']);
+                $io->newLine();
+                $this->cleanup($outputDir);
             }
 
-            $this->process(['cd', $outputDir, '&&', 'composer', 'dump-autoload']);
             $end = time();
             $totalTime = ($end - $start);
 
@@ -70,5 +74,52 @@ class PluginBuildCommand extends BaseCommand
 
 
         return Command::SUCCESS;
+    }
+
+
+    protected function executeCommands(string $buildDir)
+    {
+        $commands = Config::get('plugin.build.commands', []);
+        $this->output->writeln('<info>Executing commands: </info>');
+        foreach ($commands as $command) {
+            $cmd = ['bash', '-c', 'cd ' . $buildDir . ' && ' . implode(' ', $command)];
+            $this->output->writeln('<comment> > ' . implode(' ', $command) . ' ...</comment>');
+            try {
+                $this->process($cmd);
+            } catch (\Exception $e) {
+                $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+            }
+
+            sleep(1);
+        }
+    }
+
+    protected function cleanup(string $buildDir)
+    {
+        $files = Config::get('plugin.build.cleanup', []);
+        $this->output->writeln('<info>Cleaning: </info>');
+        foreach ($files as $file) {
+            try {
+                if ($file === '/') {
+                    throw new \Exception('You can not delete root directory');
+                }
+
+                if (str_starts_with($file, '/')) {
+                    throw new \Exception('You can not delete system files');
+                }
+
+                if (is_dir($buildDir . '/' . $file)) {
+                    $cmd = ['bash', '-c', 'cd ' . $buildDir . ' && rm -rf ./' . $file];
+                } else {
+                    $cmd = ['bash', '-c', 'cd ' . $buildDir . ' && rm ./' . $file];
+                }
+
+                $this->process($cmd);
+                $this->output->writeln('<comment>' . $file . ' ... [DELETED]</comment>');
+            } catch (\Exception $e) {
+                $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+            }
+
+        }
     }
 }

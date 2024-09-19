@@ -37,6 +37,7 @@ class Plugin
     protected string $restApiNamespace;
     protected array $providers = [];
     protected array $pluginConfig = [];
+    protected bool $isProd = false;
 
     public function __construct(string $file, string $containerClass = Container::class)
     {
@@ -55,6 +56,11 @@ class Plugin
         $this->slug = $configs['slug'] ?? 'corewp';
         $this->restApiNamespace = $configs['rest_api_namespace'] ?? 'corewp';
         $this->providers = $configs['providers'] ?? [];
+
+        if (file_exists($this->getPath('.env.dev'))) {
+            $this->isProd = false;
+        }
+
         static::$instance = $this;
     }
 
@@ -69,6 +75,11 @@ class Plugin
         }
 
         return self::$instance;
+    }
+
+    public function isProduction(): bool
+    {
+        return $this->isProd;
     }
 
     public function make(?callable $fn = null): void

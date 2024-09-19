@@ -12,20 +12,33 @@ class ViewManager
     protected Plugin $plugin;
     protected Environment $twig;
     protected bool $enableTemplating = true;
+    protected string $templateExtension;
+    protected string $templatePath;
 
     public function __construct(Plugin $plugin)
     {
         $this->plugin           = $plugin;
         $this->enableTemplating = Config::get('view.enable_templating', true);
+        $this->templateExtension = Config::get('view.template_extension', 'twig');
+        $this->templateExtension = '.' . $this->templateExtension;
+        $this->templatePath = Config::get('view.template_path', 'resources/views');
         $this->init();
     }
 
     protected function init()
     {
-        $loader = new FilesystemLoader($this->plugin->getPath('resources/views'));
-        $this->twig = new Environment($loader, [
-            'cache' => $this->plugin->getPath('storage/cache/views')
-        ]);
+        $loader = new FilesystemLoader($this->templatePath);
+        $twigConfig = [
+            'cache' => $this->plugin->getPath( Config::get('view.cache_path', 'storage/cache/views')),
+            'cache_lifetime' => Config::get('view.cache_lifetime', 0),
+        ];
+
+        if (!$this->plugin->isProduction()) {
+            $twigConfig['debug'] = true;
+            $twigConfig['auto_reload'] = true;
+        }
+
+        $this->twig = new Environment($loader, $twigConfig);
 
         $lexer = new Lexer($this->twig, [
             'tag_comment'   => Config::get('view.lexer.tag_comment', ['{#', '#}']),
@@ -53,7 +66,7 @@ class ViewManager
     {
         if ($this->enableTemplating) {
             $this->makeEnableTemplatingAsDefault();
-            return $this->twig->render($view . '.html', $data);
+            return $this->renderTwig($view, $data);
         }
 
         $this->makeEnableTemplatingAsDefault();
@@ -63,14 +76,14 @@ class ViewManager
 
     protected function renderTwig(string $view, array $data = []): string
     {
-        return $this->twig->render($view . '.html', $data);
+        return $this->twig->render($view . $this->templateExtension, $data);
     }
 
     public function renderRaw(string $view, array $data = []): string
     {
         ob_start();
         extract($data);
-        require $this->plugin->getPath('resources/views/' . $view . '.php');
+        require $this->templatePath . '/' . $view . '.php';
 
         return ob_get_clean();
     }
@@ -89,5 +102,10 @@ class ViewManager
         echo $this->renderRaw($view, $data);
 
         return;
+    }
+
+    public function print(string $view, array $data = []): void
+    {
+        $this->output($view, $data);
     }
 }
