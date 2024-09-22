@@ -21,7 +21,7 @@ class ViewManager
         $this->enableTemplating = Config::get('view.enable_templating', true);
         $this->templateExtension = Config::get('view.template_extension', 'twig');
         $this->templateExtension = '.' . $this->templateExtension;
-        $this->templatePath = Config::get('view.template_path', 'resources/views');
+        $this->templatePath = $this->plugin->getPath(Config::get('view.template_path', 'resources/views'));
         $this->init();
     }
 
