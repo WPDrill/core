@@ -110,7 +110,6 @@ class Migrator
             $this->output->writeln('<info>Migration successfully finished!</info>');
         }
 
-        $this->db->close();
     }
 
     public function rollback()
@@ -146,8 +145,6 @@ class Migrator
             $this->output->writeln('<info>Rollback successfully finished!</info>');
         }
 
-        $this->db->close();
-
     }
 
     public function reset()
@@ -173,8 +170,6 @@ class Migrator
         if ($this->output) {
             $this->output->writeln('<info>Reset successfully finished!</info>');
         }
-
-        $this->db->close();
 
     }
 
