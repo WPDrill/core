@@ -37,8 +37,8 @@ class PluginSetupCommand extends BaseCommand
             '#[function-prefix]' => $functionPrefix,
             '#[rest-namespace]' => $restNamespace,
             '#[root-namespace]' => $rootNamespace,
-            'namespace App' => 'namespace ' . $appRootNamespace,
-            'use App' => 'use ' . $appRootNamespace,
+            'namespace App' => 'namespace ' . $appRootNamespace . '\\App',
+            'use App' => 'use ' . $appRootNamespace . '\\App',
             '\App\\' => '\\' . $appRootNamespace . '\\App\\',
             '"App\\\":' => '"' . $appRootNamespace  . '\\\App\\\":',
         ];
