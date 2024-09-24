@@ -39,8 +39,8 @@ class PluginSetupCommand extends BaseCommand
             '#[root-namespace]' => $rootNamespace,
             'namespace App' => 'namespace ' . $appRootNamespace,
             'use App' => 'use ' . $appRootNamespace,
-            '\App\\' => '\\' . $appRootNamespace . '\\',
-            '"App\\\":' => '"' . $appRootNamespace  . '\\\":',
+            '\App\\' => '\\' . $appRootNamespace . '\\App\\',
+            '"App\\\":' => '"' . $appRootNamespace  . '\\\App\\\":',
         ];
 
         copy(__DIR__.'/../../stubs/wpdrill.stub', WPDRILL_ROOT_PATH.'/' . $pluginSlug . '.php');
