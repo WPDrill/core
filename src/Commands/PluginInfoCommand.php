@@ -26,9 +26,9 @@ class PluginInfoCommand extends BaseCommand
         $table = new Table($output);
         $table
             ->setRows([
-                ['Name', $config['name']],
+                ['<comment>Name</comment>', $config['name']],
                 new TableSeparator(),
-                ['Version', $config['version']],
+                ['<comment>Version</comment>', $config['version']],
             ])
         ;
         $table->render();

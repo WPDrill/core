@@ -7,7 +7,9 @@ use DateTimeZone;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
@@ -20,6 +22,8 @@ class PluginBuildCommand extends BaseCommand
     {
         $this->setName('plugin:build')
              ->addOption('prod', 'p', null, 'Build the plugin for production, this build remove dev dependencies')
+             ->addOption('set-version', 'x', InputOption::VALUE_REQUIRED, 'Added version to the newly build')
+             ->addOption('archive', 'a', InputOption::VALUE_REQUIRED, 'Archive the build. Supported formats: zip, tar')
              ->setDescription('Build the plugin for production')
              ->setHelp('This build command allow you to build the plugin for production.');
     }
@@ -29,6 +33,7 @@ class PluginBuildCommand extends BaseCommand
         $start = time();
 
         $io = new SymfonyStyle($input, $output);
+        $version = '';
 
         $date = new DateTime("now", new DateTimeZone("UTC"));
         $buildName = 'build-' . $date->format("Y-m-d\TH:i:s\Z");
@@ -36,8 +41,13 @@ class PluginBuildCommand extends BaseCommand
             $buildName .= '-prod';
         }
 
-        $outputDir = WPDRILL_ROOT_PATH . '/' . Config::get('plugin.build.output_dir', '.dist') . '/' . $buildName;
+        if ($input->getOption('set-version')) {
+            $version = $input->getOption('set-version');
+            $buildName .= '-' . $version;
+        }
 
+        $outputDir = WPDRILL_ROOT_PATH . '/' . Config::get('plugin.build.output_dir', '.dist');
+        $buildDir = $outputDir . '/' . $buildName;
 
         $io->newLine();
         $output->writeln('Building the plugin...');
@@ -46,15 +56,26 @@ class PluginBuildCommand extends BaseCommand
             $this->process(['composer', 'install', '--no-dev']);
         }
 
-        $buildProcess = $this->process(['./vendor/bin/php-scoper', 'add-prefix', '--force', '--output-dir=' . $outputDir]);
+        $buildProcess = $this->process(['./vendor/bin/php-scoper', 'add-prefix', '--force', '--output-dir=' . $buildDir]);
 
         if ($buildProcess->isSuccessful()) {
             $io->newLine();
-            $this->executeCommands($outputDir);
+            if ($version !== '') {
+                $this->updateBuildVersion($version, $buildDir);
+            }
+
+            $this->executeCommands($buildDir);
             if ($input->getOption('prod')) {
                 $this->process(['composer', 'install']);
                 $io->newLine();
-                $this->cleanup($outputDir);
+                $this->cleanup($buildDir);
+            }
+
+            if ($archive = $input->getOption('archive')) {
+                $io->newLine();
+                $output->writeln('<info>Archiving the build ...</info>');
+                $this->archive($outputDir, $buildName, $archive);
+                $output->writeln('<comment>Archived [DONE]</comment>');
             }
 
             $end = time();
@@ -121,5 +142,47 @@ class PluginBuildCommand extends BaseCommand
             }
 
         }
+    }
+
+    protected function updateBuildVersion(string $version, string $buildDir): void
+    {
+        $slug = Config::get('plugin.slug');
+        $pluginFile = $buildDir . '/' . $slug . '.php';
+        $pluginFileContents = file_get_contents($pluginFile);
+
+        $pluginFileContents = preg_replace('/Version: (.*)/', 'Version: ' . $version, $pluginFileContents);
+        file_put_contents($pluginFile, $pluginFileContents);
+
+        $pluginConfigFile = $buildDir . '/config/plugin.php';
+        $pluginConfigFileContents = file_get_contents($pluginConfigFile);
+        $pluginConfigFileContents = preg_replace('/(\'version\' => \s*\')([0-9\.]+)(\')/', '\'version\' => \'' .$version . '\'', $pluginConfigFileContents);
+        file_put_contents($pluginConfigFile, $pluginConfigFileContents);
+
+    }
+
+    protected function archive(string $outputDir, string $archiveName, string $ext = 'zip'): void
+    {
+        $supportedFormats = ['zip', 'tar'];
+
+        if (!in_array($ext, $supportedFormats)) {
+            $this->output->writeln('<error>Unsupported archive format</error>');
+            return;
+        }
+
+        $archive = $archiveName . '.' . $ext;
+
+        if ($ext === 'zip') {
+            $cmd = ['bash', '-c', 'cd ' . $outputDir . ' && zip -r ' . $archive . ' ' . $archiveName . '/.'];
+        }
+
+        if ($ext === 'tar') {
+            $cmd = [ 'bash', '-c', 'cd ' . $outputDir . ' && tar -cvf ' . $archive . ' ' . $archiveName . '/.' ];
+        }
+
+        $cmd[2] = $cmd[2] . ' && rm -rf ./'. $archiveName;
+
+        $this->process($cmd);
+
+
     }
 }

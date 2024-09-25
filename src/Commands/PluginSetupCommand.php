@@ -3,6 +3,7 @@
 namespace WPDrill\Commands;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -25,7 +26,8 @@ class PluginSetupCommand extends BaseCommand
         $prefix = str_replace([' ', '-'], ['_', '_'], $prefix);
         $functionPrefix = lcfirst($prefix);
         $constPrefix = strtoupper($prefix);
-        $restNamespace = $this->ask('Enter the rest namespace: ');
+        $restNamespace = $this->ask('Enter the REST API namespace[space,hyphen will be converted to _]: ');
+        $restNamespace = str_replace([' ', '-'], ['_', '_'], $restNamespace);
         $rootNamespace = $this->ask('Enter the app root namespace: ');
         $appRootNamespace = rtrim(str_replace(' ', '', $rootNamespace), '\\');
 
@@ -54,7 +56,21 @@ class PluginSetupCommand extends BaseCommand
         $this->process(['composer', 'dump-autoload']);
         $this->process(['composer', 'bin', 'php-scoper', 'require', '--dev', 'humbug/php-scoper']);
 
-        $output->writeln('<info>Plugin name is: </info>'.$pluginName);
+        $output->writeln('<info>Congratulations! Your plugin is ready to develop.</info>');
+
+        $table = new Table($output);
+
+        $table->setHeaderTitle("Info");
+        $table->addRows([
+            ['<comment>Plugin Name</comment>', $pluginName],
+            ['<comment>Plugin Slug</comment>', $pluginSlug],
+            ['<comment>Plugin Prefix</comment>', $prefix],
+            ['<comment>REST API Namespace</comment>', $restNamespace],
+            ['<comment>Root Namespace</comment>', $rootNamespace],
+        ]);
+
+        $table->render();
+
         return Command::SUCCESS;
     }
 
