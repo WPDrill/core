@@ -45,10 +45,15 @@ class BaseCommand extends Command
     }
 
 
-    protected function process(array $command): Process
+    protected function process(array $command = []): Process
     {
+        if (empty($command)) {
+            return new Process([]);
+        }
+
         $helper = $this->getHelper('process');
         $process = new Process($command);
+        $process->setTimeout(360);
 
         return $helper->run($this->output, $process);
     }

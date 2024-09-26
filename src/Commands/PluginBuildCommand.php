@@ -5,15 +5,10 @@ namespace WPDrill\Commands;
 use DateTime;
 use DateTimeZone;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Helper\TableSeparator;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
-use WPDrill\DB\Migration\Migrator;
 use WPDrill\Facades\Config;
 
 class PluginBuildCommand extends BaseCommand
@@ -58,55 +53,51 @@ class PluginBuildCommand extends BaseCommand
 
         $buildProcess = $this->process(['./vendor/bin/php-scoper', 'add-prefix', '--force', '--output-dir=' . $buildDir]);
 
-        if ($buildProcess->isSuccessful()) {
-            $io->newLine();
-            if ($version !== '') {
-                $this->updateBuildVersion($version, $buildDir);
-            }
-
-            $this->executeCommands($buildDir);
-            if ($input->getOption('prod')) {
-                $this->process(['composer', 'install']);
-                $io->newLine();
-                $this->cleanup($buildDir);
-            }
-
-            if ($archive = $input->getOption('archive')) {
-                $io->newLine();
-                $output->writeln('<info>Archiving the build ...</info>');
-                $this->archive($outputDir, $buildName, $archive);
-                $output->writeln('<comment>Archived [DONE]</comment>');
-            }
-
-            $end = time();
-            $totalTime = ($end - $start);
-
-            $io->newLine();
-            $output->writeln('<info>Plugin build successfully!</info>');
-            $io->newLine();
-            $output->writeln([
-                '<comment>Build Name: ' . $buildName. '</comment>',
-                '<comment>Time: ' . $totalTime . ' Seconds</comment>'
-            ]);
-        } else {
+        if (!$buildProcess->isSuccessful()) {
             $output->writeln('<error>' . $buildProcess->getErrorOutput() .'</error>');
             return Command::FAILURE;
         }
 
+        if ($version !== '') {
+            $io->newLine();
+            $this->updateBuildVersion($version, $buildDir);
+        }
+
+        $this->executeCommands($buildDir);
+        if ($input->getOption('prod')) {
+            $this->process(['composer', 'install', '--dev']);
+            $io->newLine();
+            $this->cleanup($buildDir);
+        }
+
+        if ($archive = $input->getOption('archive')) {
+            $io->newLine();
+            $this->archive($outputDir, $buildName, $archive);
+        }
+
+        $end = time();
+        $totalTime = ($end - $start);
+
+        $io->newLine();
+        $output->writeln('<info>Plugin build successfully completed!</info>');
+        $io->newLine();
+        $output->writeln([
+            '<comment>Build Name: ' . $buildName. '</comment>',
+            '<comment>Time: ' . $totalTime . ' Seconds</comment>'
+        ]);
 
         return Command::SUCCESS;
     }
 
-
     protected function executeCommands(string $buildDir)
     {
         $commands = Config::get('plugin.build.commands', []);
-        $this->output->writeln('<info>Executing commands: </info>');
+        $this->output->writeln('<comment>Executing commands: </comment>');
         foreach ($commands as $command) {
             $cmd = ['bash', '-c', 'cd ' . $buildDir . ' && ' . implode(' ', $command)];
-            $this->output->writeln('<comment> > ' . implode(' ', $command) . ' ...</comment>');
             try {
                 $this->process($cmd);
+                $this->output->writeln('<info> > ' . implode(' ', $command) . ' [DONE]</info>');
             } catch (\Exception $e) {
                 $this->output->writeln('<error>' . $e->getMessage() . '</error>');
             }
@@ -118,7 +109,7 @@ class PluginBuildCommand extends BaseCommand
     protected function cleanup(string $buildDir)
     {
         $files = Config::get('plugin.build.cleanup', []);
-        $this->output->writeln('<info>Cleaning: </info>');
+        $this->output->writeln('<comment>Cleaning: </comment>');
         foreach ($files as $file) {
             try {
                 if ($file === '/') {
@@ -136,7 +127,7 @@ class PluginBuildCommand extends BaseCommand
                 }
 
                 $this->process($cmd);
-                $this->output->writeln('<comment>' . $file . ' ... [DELETED]</comment>');
+                $this->output->writeln('<info>' . $file . ' ... [DELETED]</info>');
             } catch (\Exception $e) {
                 $this->output->writeln('<error>' . $e->getMessage() . '</error>');
             }
@@ -158,10 +149,13 @@ class PluginBuildCommand extends BaseCommand
         $pluginConfigFileContents = preg_replace('/(\'version\' => \s*\')([0-9\.]+)(\')/', '\'version\' => \'' .$version . '\'', $pluginConfigFileContents);
         file_put_contents($pluginConfigFile, $pluginConfigFileContents);
 
+        $this->output->writeln('<info>Version updated to - ' . $version . ' [DONE]</info>');
+
     }
 
     protected function archive(string $outputDir, string $archiveName, string $ext = 'zip'): void
     {
+        $this->output->writeln('<comment>Archiving the build ...</comment>');
         $supportedFormats = ['zip', 'tar'];
 
         if (!in_array($ext, $supportedFormats)) {
@@ -183,6 +177,6 @@ class PluginBuildCommand extends BaseCommand
 
         $this->process($cmd);
 
-
+        $this->output->writeln('<info>Archived [DONE]</info>');
     }
 }
