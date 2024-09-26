@@ -54,7 +54,7 @@ class PluginSetupCommand extends BaseCommand
 
         $this->replaceExecute($replaces);
         $this->process(['composer', 'dump-autoload']);
-        $this->process(['composer', 'bin', 'php-scoper', 'require', '--dev', 'humbug/php-scoper']);
+        //$this->process(['composer', 'bin', 'php-scoper', 'require', '--dev', 'humbug/php-scoper']);
 
         $output->writeln('<info>Congratulations! Your plugin is ready to develop.</info>');
 
