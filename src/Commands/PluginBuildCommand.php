@@ -52,6 +52,7 @@ class PluginBuildCommand extends BaseCommand
         }
 
         $this->process(['./wpdrill', 'view:cache']);
+        $this->executeCommandsBefore(WPDRILL_ROOT_PATH);
 
         $buildProcess = $this->process(['./vendor/bin/php-scoper', 'add-prefix', '--force', '--output-dir=' . $buildDir]);
 
@@ -65,7 +66,7 @@ class PluginBuildCommand extends BaseCommand
             $this->updateBuildVersion($version, $buildDir);
         }
 
-        $this->executeCommands($buildDir);
+        $this->executeCommandsAfter($buildDir);
         if ($input->getOption('prod')) {
             $this->process(['composer', 'install', '--dev']);
             $io->newLine();
@@ -91,12 +92,26 @@ class PluginBuildCommand extends BaseCommand
         return Command::SUCCESS;
     }
 
-    protected function executeCommands(string $buildDir)
+    protected function executeCommandsBefore(string $buildDir)
     {
-        $commands = Config::get('plugin.build.commands', []);
+        $commands = Config::get('plugin.build.commands.before', []);
+
+        $this->executeCommands($commands, $buildDir);
+    }
+
+    protected function executeCommandsAfter(string $buildDir)
+    {
+        $commands = Config::get('plugin.build.commands.after', []);
+
+        $this->executeCommands($commands, $buildDir);
+    }
+
+    protected function executeCommands(array $commands, string $dir)
+    {
         $this->output->writeln('<comment>Executing commands: </comment>');
         foreach ($commands as $command) {
-            $cmd = ['bash', '-c', 'cd ' . $buildDir . ' && ' . implode(' ', $command)];
+            $cmd = ['bash', '-c', 'cd ' . $dir . ' && ' . implode(' ', $command)];
+            $this->output->writeln(' > ' . implode(' ', $command) . ' ...');
             try {
                 $this->process($cmd);
                 $this->output->writeln('<info> > ' . implode(' ', $command) . ' [DONE]</info>');
