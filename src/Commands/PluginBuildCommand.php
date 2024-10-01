@@ -51,6 +51,8 @@ class PluginBuildCommand extends BaseCommand
             $this->process(['composer', 'install', '--no-dev']);
         }
 
+        $this->process(['./wpdrill', 'view:cache']);
+
         $buildProcess = $this->process(['./vendor/bin/php-scoper', 'add-prefix', '--force', '--output-dir=' . $buildDir]);
 
         if (!$buildProcess->isSuccessful()) {
