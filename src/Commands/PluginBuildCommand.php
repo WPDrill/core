@@ -31,7 +31,7 @@ class PluginBuildCommand extends BaseCommand
         $version = '';
 
         $date = new DateTime("now", new DateTimeZone("UTC"));
-        $buildName = 'build-' . $date->format("Y-m-d\TH:i:s\Z");
+        $buildName = 'build-' . $date->format("Y-m-d\THis\Z");
         if ($input->getOption('prod')) {
             $buildName .= '-prod';
         }

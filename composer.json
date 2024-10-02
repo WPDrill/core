@@ -4,11 +4,13 @@
     "type": "library",
     "license": "MIT",
     "keywords": ["wordpress", "plugin", "framework"],
-    "version": "1.0.0",
     "autoload": {
         "psr-4": {
             "WPDrill\\": "src/"
-        }
+        },
+        "files": [
+            "helpers/helpers.php"
+        ]
     },
     "authors": [
         {

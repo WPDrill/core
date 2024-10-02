@@ -7,6 +7,7 @@ use WPDrill\Routing\RouteManager;
 use DI\Container;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
+use function WPDrill\Helpers\func\wpdrill_path;
 
 class Plugin
 {
@@ -49,7 +50,7 @@ class Plugin
 
         $this->builder = new ContainerBuilder($containerClass);
 
-        $this->pluginConfig = $configs = require_once $this->getPath('config/plugin.php');
+        $this->pluginConfig = $configs = require_once $this->getPath(wpdrill_path(['config', 'plugin.php']));
 
         $this->version = $configs['version'] ?? '1.0.0';
         $this->name = $configs['name'] ?? 'WPDrill';
@@ -164,12 +165,12 @@ class Plugin
 
     public function getPath(string $path = ''): string
     {
-        return rtrim($this->path, '/') . '/' . ltrim($path, '/');
+        return rtrim($this->path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
     }
 
     public function getRelativePath(string $path = ''): string
     {
-        return rtrim($this->relativePath, '/') . '/' . ltrim($path, '/');
+        return rtrim($this->relativePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
     }
 
     public function getVersion(): string

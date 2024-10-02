@@ -121,7 +121,7 @@ class ViewManager
         $iterator = new RecursiveIteratorIterator($directory);
         $regex = new RegexIterator($iterator, '/\\' . $this->templateExtension .'$/');  // Match .twig files
         foreach ($regex as $file) {
-            $relativePath = str_replace($dir . '/', '', $file->getPathname());
+            $relativePath = str_replace($dir . DIRECTORY_SEPARATOR, '', $file->getPathname());
             echo $relativePath . " ...\n";
             try {
                 // Load each template to compile and cache it
