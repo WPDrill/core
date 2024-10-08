@@ -19,8 +19,10 @@ class EnqueueServiceProvider extends ServiceProvider
         $frontendLocalizeScripts = Config::get('enqueue.frontend.localize_scripts', []);
         $frontendStyles = Config::get('enqueue.frontend.styles', []);
 
-        $this->registerAdminEnqueue($adminScripts,$adminLocalizeScripts, $adminStyles);
-        $this->registerFrontendEnqueue($frontendScripts,$frontendLocalizeScripts, $frontendStyles);
+        $this->registerAdminEnqueue($adminScripts, $adminStyles);
+        $this->registerFrontendEnqueue($frontendScripts, $frontendStyles);
+        $this->registerAdminLoclizeEnqueue($adminLocalizeScripts);
+        $this->registerFrontendLocalizeEnqueue($frontendLocalizeScripts);
 
         $scripts = array_column(array_merge($adminScripts, $frontendScripts), null, 'handle');
         $styles = array_column(array_merge($adminStyles, $frontendStyles), null, 'handle');
@@ -28,30 +30,39 @@ class EnqueueServiceProvider extends ServiceProvider
         $this->addAttributeToStyles($styles);
     }
 
-    protected function registerAdminEnqueue(array $scripts, array $adminLocalizeScripts, array $styles): void
+    protected function registerAdminEnqueue(array $scripts, array $styles): void
     {
-        add_action('admin_enqueue_scripts', function () use ($scripts, $adminLocalizeScripts, $styles) {
+        add_action('admin_enqueue_scripts', function () use ($scripts, $styles) {
             foreach ($scripts as $script) {
                 wp_enqueue_script($script['handle'], $this->plugin->getRelativePath($script['src']), $script['deps'], $script['ver'], $script['in_footer']);
             }
-            foreach ($adminLocalizeScripts as $adminLocalizeScript) {
-                wp_localize_script($adminLocalizeScript['handle'], $adminLocalizeScript['objectName'],$adminLocalizeScript['data']);
-            }
-
             foreach ($styles as $style) {
                 wp_enqueue_style($style['handle'], $this->plugin->getRelativePath($style['src']), $style['deps'], $style['ver'], $style['media']);
             }
         });
+    } 
+    protected function registerAdminLoclizeEnqueue(array $adminLocalizeScripts): void
+    {
+        add_action('admin_enqueue_scripts', function () use ($adminLocalizeScripts) {
+            foreach ($adminLocalizeScripts as $adminLocalizeScript) {
+                wp_localize_script($adminLocalizeScript['handle'], $adminLocalizeScript['objectName'],$adminLocalizeScript['data']);
+            }
+        });
     }
 
-    protected function registerFrontendEnqueue(array $scripts, array $frontendLocalizeScripts, array $styles): void
+    protected function registerFrontendLocalizeEnqueue( array $frontendLocalizeScripts): void
     {
-        add_action('wp_enqueue_scripts', function () use ($scripts, $frontendLocalizeScripts, $styles) {
-            foreach ($scripts as $script) {
-                wp_enqueue_script($script['handle'], $this->plugin->getRelativePath($script['src']), $script['deps'], $script['ver'], $script['in_footer']);
-            }
+        add_action('wp_enqueue_scripts', function () use ($frontendLocalizeScripts) {
             foreach ($frontendLocalizeScripts as $frontendLocalizeScript) {
                 wp_localize_script($frontendLocalizeScript['handle'], $frontendLocalizeScript['objectName'],$frontendLocalizeScript['data']);
+            }
+        });
+    }
+    protected function registerFrontendEnqueue(array $scripts, array $styles): void
+    {
+        add_action('wp_enqueue_scripts', function () use ($scripts, $styles) {
+            foreach ($scripts as $script) {
+                wp_enqueue_script($script['handle'], $this->plugin->getRelativePath($script['src']), $script['deps'], $script['ver'], $script['in_footer']);
             }
             foreach ($styles as $style) {
                 wp_enqueue_style($style['handle'], $this->plugin->getRelativePath($style['src']), $style['deps'], $style['ver'], $style['media']);
