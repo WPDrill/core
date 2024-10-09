@@ -39,6 +39,7 @@ class ViewManager
         }
 
         $this->twig = new Environment($loader, $twigConfig);
+        $this->twig->addExtension(new LocalizationForTwig());
 
         $lexer = new Lexer($this->twig, [
             'tag_comment'   => Config::get('view.lexer.tag_comment', ['{#', '#}']),
