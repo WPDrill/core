@@ -21,6 +21,7 @@ class EnqueueServiceProvider extends ServiceProvider
 
         $this->registerAdminEnqueue($adminScripts, $adminStyles);
         $this->registerFrontendEnqueue($frontendScripts, $frontendStyles);
+        $this->registerMediaUploadScript();
 
         $scripts = array_column(array_merge($adminScripts, $frontendScripts), null, 'handle');
         $styles = array_column(array_merge($adminStyles, $frontendStyles), null, 'handle');
@@ -51,6 +52,12 @@ class EnqueueServiceProvider extends ServiceProvider
             foreach ($styles as $style) {
                 wp_enqueue_style($style['handle'], $this->plugin->getRelativePath($style['src']), $style['deps'], $style['ver'], $style['media']);
             }
+        });
+    }
+    protected function registerMediaUploadScript(): void
+    {
+        add_action('admin_enqueue_scripts', function ()  {
+            wp_enqueue_media();
         });
     }
 
