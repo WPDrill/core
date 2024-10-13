@@ -1,14 +1,16 @@
 <?php
 
-namespace WPDrill;
+namespace WPDrill\Views;
 
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RegexIterator;
-use WPDrill\Facades\Config;
 use Twig\Environment;
 use Twig\Lexer;
 use Twig\Loader\FilesystemLoader;
+use WPDrill\Exception;
+use WPDrill\Facades\Config;
+use WPDrill\Plugin;
 
 class ViewManager
 {
@@ -43,6 +45,7 @@ class ViewManager
         }
 
         $this->twig = new Environment($this->loader, $twigConfig);
+        $this->twig->addExtension(new TwigFunctions());
 
         $lexer = new Lexer($this->twig, [
             'tag_comment'   => Config::get('view.lexer.tag_comment', ['{#', '#}']),

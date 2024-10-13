@@ -3,7 +3,7 @@
 namespace WPDrill\Facades;
 
 use WPDrill\Facade;
-use WPDrill\ViewManager;
+use WPDrill\Views\ViewManager;
 
 /**
  * @method static string render(string $view, array $data = [])

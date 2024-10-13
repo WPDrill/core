@@ -7,7 +7,7 @@ use WPDrill\Routing\RouteManager;
 use DI\Container;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
-use function WPDrill\Helpers\func\wpdrill_path;
+use WPDrill\Helpers;
 
 class Plugin
 {
@@ -50,7 +50,7 @@ class Plugin
 
         $this->builder = new ContainerBuilder($containerClass);
 
-        $this->pluginConfig = $configs = require_once $this->getPath(wpdrill_path(['config', 'plugin.php']));
+        $this->pluginConfig = $configs = require_once $this->getPath(Helpers::path(['config', 'plugin.php']));
 
         $this->version = $configs['version'] ?? '1.0.0';
         $this->name = $configs['name'] ?? 'WPDrill';
