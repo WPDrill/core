@@ -1,11 +1,16 @@
 <?php
 
-namespace WPDrill;
+namespace WPDrill\Views;
 
-use WPDrill\Facades\Config;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RegexIterator;
 use Twig\Environment;
 use Twig\Lexer;
 use Twig\Loader\FilesystemLoader;
+use WPDrill\Exception;
+use WPDrill\Facades\Config;
+use WPDrill\Plugin;
 
 class ViewManager
 {
@@ -14,6 +19,7 @@ class ViewManager
     protected bool $enableTemplating = true;
     protected string $templateExtension;
     protected string $templatePath;
+    protected FilesystemLoader $loader;
 
     public function __construct(Plugin $plugin)
     {
@@ -27,7 +33,7 @@ class ViewManager
 
     protected function init()
     {
-        $loader = new FilesystemLoader($this->templatePath);
+        $this->loader = new FilesystemLoader($this->templatePath);
         $twigConfig = [
             'cache' => $this->plugin->getPath( Config::get('view.cache_path', 'storage/cache/views')),
             'cache_lifetime' => Config::get('view.cache_lifetime', 0),
@@ -38,7 +44,8 @@ class ViewManager
             $twigConfig['auto_reload'] = true;
         }
 
-        $this->twig = new Environment($loader, $twigConfig);
+        $this->twig = new Environment($this->loader, $twigConfig);
+        $this->twig->addExtension(new TwigFunctions());
 
         $lexer = new Lexer($this->twig, [
             'tag_comment'   => Config::get('view.lexer.tag_comment', ['{#', '#}']),
@@ -107,5 +114,25 @@ class ViewManager
     public function print(string $view, array $data = []): void
     {
         $this->output($view, $data);
+    }
+
+    public function compile()
+    {
+        $dir =  $this->templatePath;
+
+        $directory = new RecursiveDirectoryIterator($dir);
+        $iterator = new RecursiveIteratorIterator($directory);
+        $regex = new RegexIterator($iterator, '/\\' . $this->templateExtension .'$/');  // Match .twig files
+        foreach ($regex as $file) {
+            $relativePath = str_replace($dir . DIRECTORY_SEPARATOR, '', $file->getPathname());
+            echo $relativePath . " ...\n";
+            try {
+                // Load each template to compile and cache it
+                $this->twig->load($relativePath);
+                echo $relativePath . ' - [COMPILED]' . "\n";
+            } catch (Exception $e) {
+                echo $relativePath . ' - [FAILED]' . "\n";
+            }
+        }
     }
 }

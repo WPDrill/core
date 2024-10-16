@@ -74,7 +74,7 @@ class QueryBuilderHandler
 
         // Query builder adapter instance
         $this->adapterInstance = $this->container->build(
-            '\\WPDrill\DB\\QueryBuilder\\Adapters\\' . ucfirst($this->adapter),
+            $this->adapter,
             array($this->connection)
         );
     }

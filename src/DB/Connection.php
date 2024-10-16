@@ -3,6 +3,9 @@
 namespace WPDrill\DB;
 
 use Viocon\Container;
+use WPDrill\DB\QueryBuilder\Adapters\Mysql;
+use WPDrill\DB\EventHandler;
+use WPDrill\DB\QueryBuilder\QueryBuilderHandler;
 
 class Connection
 {
@@ -58,7 +61,7 @@ class Connection
         $this->setAdapter()->setAdapterConfig($config)->connect();
 
         // Create event dependency
-        $this->eventHandler = $this->container->build('\\WPDrill\DB\\EventHandler');
+        $this->eventHandler = $this->container->build(EventHandler::class);
 
         if ($alias) {
             $this->createAlias($alias);
@@ -72,9 +75,9 @@ class Connection
      */
     public function createAlias($alias)
     {
-        class_alias('WPDrill\DB\\src\\AliasFacade', $alias);
+        class_alias(AliasFacade::class, $alias);
 
-        $builder = $this->container->build('\\WPDrill\DB\\QueryBuilder\\QueryBuilderHandler', array($this));
+        $builder = $this->container->build(QueryBuilderHandler::class, array($this));
 
         AliasFacade::setQueryBuilderInstance($builder);
     }
@@ -84,7 +87,7 @@ class Connection
      */
     public function getQueryBuilder()
     {
-        return $this->container->build('\\WPDrill\DB\\QueryBuilder\\QueryBuilderHandler', array($this));
+        return $this->container->build(QueryBuilderHandler::class, array($this));
     }
 
 
@@ -126,7 +129,7 @@ class Connection
      *
      * @return $this
      */
-    public function setAdapter($adapter = 'mysql')
+    public function setAdapter($adapter = Mysql::class)
     {
         $this->adapter = $adapter;
 

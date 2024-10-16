@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class PluginSetupCommand extends BaseCommand
 {
     protected function configure()
-     {
+    {
         $this->setName('plugin:init')
             ->setDescription('Setup the plugin')
             ->setHelp('This command allows you to setup the plugin for development.');
