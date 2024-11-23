@@ -54,7 +54,15 @@ class PluginBuildCommand extends BaseCommand
         $this->process(['./wpdrill', 'view:cache']);
         $this->executeCommandsBefore(WPDRILL_ROOT_PATH);
 
-        $buildProcess = $this->process(['./vendor/bin/php-scoper', 'add-prefix', '--force', '--output-dir=' . $buildDir]);
+        if (!file_exists(WPDRILL_ROOT_PATH . '/php-scoper')) {
+            $output->writeln([
+                '<error>No php-scoper executable file available</error>',
+            ]);
+
+            return Command::FAILURE;
+        }
+
+        $buildProcess = $this->process(['./php-scoper', 'add-prefix', '--force', '--output-dir=' . $outputDir]);
 
         if (!$buildProcess->isSuccessful()) {
             $output->writeln('<error>' . $buildProcess->getErrorOutput() .'</error>');
