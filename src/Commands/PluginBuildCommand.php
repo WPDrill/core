@@ -62,7 +62,7 @@ class PluginBuildCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        $buildProcess = $this->process(['./php-scoper', 'add-prefix', '--force', '--output-dir=' . $outputDir]);
+        $buildProcess = $this->process(['./php-scoper', 'add-prefix', '--force', '--output-dir=' . $buildDir]);
 
         if (!$buildProcess->isSuccessful()) {
             $output->writeln('<error>' . $buildProcess->getErrorOutput() .'</error>');
@@ -121,8 +121,12 @@ class PluginBuildCommand extends BaseCommand
             $cmd = ['bash', '-c', 'cd ' . $dir . ' && ' . implode(' ', $command)];
             $this->output->writeln(' > ' . implode(' ', $command) . ' ...');
             try {
-                $this->process($cmd);
-                $this->output->writeln('<info> > ' . implode(' ', $command) . ' [DONE]</info>');
+                $process = $this->process($cmd);
+                if ($process->isSuccessful()) {
+                    $this->output->writeln('<info> > ' . implode(' ', $command) . ' [DONE]</info>');
+                } else {
+                    $this->output->writeln('<error> >' . implode(' ', $command) . ' [FAILED]</error>');
+                }
             } catch (\Exception $e) {
                 $this->output->writeln('<error>' . $e->getMessage() . '</error>');
             }
