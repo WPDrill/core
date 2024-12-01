@@ -21,6 +21,8 @@ use WPDrill\Facade;
  * @method static self orWhere(string $key, $operator = null, $value = null)
  * @method static self whereIn(string $key, array $values)
  * @method static self whereNull(string $key)
+ * @method static QueryBuilderHandler transaction( \Closure $callback )
+ * @method static void chunk( int $count, callable $callback );
  */
 abstract class Model extends Facade
 {

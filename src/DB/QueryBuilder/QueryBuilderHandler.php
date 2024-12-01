@@ -1153,4 +1153,26 @@ class QueryBuilderHandler
 
         return $this;
     }
+
+
+    /**
+     * @param int $chunk
+     * @param callable $fn
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function chunk(int $chunk, callable $fn )
+    {
+        $page = 1;
+        $perPage = $chunk;
+        $total = $this->count();
+        $lastPage = (int) ceil($total / $perPage);
+
+        while ($page <= $lastPage) {
+            $data = $this->limit($perPage)->offset(($page - 1) * $perPage)->get();
+            $fn($data);
+            $page++;
+        }
+    }
 }
