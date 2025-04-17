@@ -148,7 +148,7 @@ class Plugin
         }
 
         if ($uninstallHandler) {
-            register_uninstall_hook($this->file, $this->resolveHandler($uninstallHandler));
+            register_uninstall_hook($this->file, $uninstallHandler);
         }
     }
 
