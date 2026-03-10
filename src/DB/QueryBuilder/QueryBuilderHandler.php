@@ -43,6 +43,16 @@ class QueryBuilderHandler
     protected $adapterInstance;
 
     /**
+     * @var string
+     */
+    protected $adapter;
+
+    /**
+     * @var array
+     */
+    protected $adapterConfig;
+
+    /**
      * The PDO fetch parameters to use
      *
      * @var array
